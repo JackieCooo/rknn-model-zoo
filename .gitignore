@@ -1,0 +1,9 @@
+build/
+install/
+asset/
+
+.vscode/*
+!.vscode/cmake-kits.json
+
+3rd-party/opencv/*
+!3rd-party/opencv/.placeholder

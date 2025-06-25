@@ -1,0 +1,15 @@
+[submodule "3rd-party/rknpu2"]
+	path = 3rd-party/rknpu2
+	url = https://gitee.com/JackieCoo/rknpu2.git
+[submodule "3rd-party/mpi"]
+	path = 3rd-party/mpi
+	url = https://gitee.com/JackieCoo/mpi.git
+[submodule "3rd-party/mpi-wrapper"]
+	path = 3rd-party/mpi-wrapper
+	url = http://192.168.3.70:3301/chenwenhao/mpi-wrapper.git
+[submodule "3rd-party/rga-wrapper"]
+	path = 3rd-party/rga-wrapper
+	url = http://192.168.3.70:3301/chenwenhao/rga-wrapper.git
+[submodule "3rd-party/librga"]
+	path = 3rd-party/librga
+	url = https://github.com/airockchip/librga.git

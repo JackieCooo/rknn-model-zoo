@@ -1,0 +1,6 @@
+[
+    {
+        "name": "aarch64-buildroot-linux",
+        "toolchainFile": "/media/sangfor/vdb/rk3576/host/share/buildroot/toolchainfile.cmake"
+    }
+]
