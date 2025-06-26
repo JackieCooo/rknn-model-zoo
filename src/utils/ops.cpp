@@ -2,28 +2,34 @@
 
 #include <cmath>
 #include <algorithm>
-
-#include "rknn_api.h"
+#include <set>
 
 
 namespace Utils
 {
-    void DFL(float* tensor, int len, float box[4])
+    std::array<float, 4> DFL(const std::vector<float>& tensor)
     {
+        size_t len = tensor.size() / 4;
+        std::array<float, 4> box;
+
         for (int b = 0; b < 4; b++) {
             float exp_t[len];
             float exp_sum = 0;
             float acc_sum = 0;
-            for (int i = 0; i < len; i++) {
+
+            for (size_t i = 0; i < len; i++) {
                 exp_t[i] = std::exp(tensor[i + b * len]);
                 exp_sum += exp_t[i];
             }
-            
-            for (int i = 0; i < len; i++) {
+
+            for (size_t i = 0; i < len; i++) {
                 acc_sum += exp_t[i] / exp_sum * i;
             }
+
             box[b] = acc_sum;
         }
+
+        return box;
     }
 
     float IoU(const Rect2f& b1, const Rect2f& b2)
@@ -46,48 +52,58 @@ namespace Utils
         return u <= 0.f ? 0.f : (i / u);    
     }
 
-    void Transform(Rect2f& rect, Rga::Transformation& trans)
+    std::vector<int> NMS(
+        const std::vector<Rect2f>& boxes,
+        const std::vector<float>& scores,
+        const std::vector<int>& classes,
+        float threshold
+    )
     {
-        rect.x = (rect.x - trans.xOffset) / trans.scale;
-        rect.y = (rect.y - trans.yOffset) / trans.scale;
-        rect.width /= trans.scale;
-        rect.height /= trans.scale;
-    }
+        std::vector<int> result;
 
-    std::vector<int> NMS(const std::vector<Rect2f>& boxes, const std::vector<float>& scores, float threshold)
-    {
-        std::vector<int> indice(boxes.size());
-        for (size_t i = 0; i < boxes.size(); i++) {
-            indice[i] = i;
+        /* 统计类别数 */
+        std::set<int> nc;
+        for (size_t i = 0; i < classes.size(); i++) {
+            nc.insert(classes[i]);
         }
 
-        /* 按照分数降序排序 */
-        std::sort(indice.begin(), indice.end(), [&](const int& a, const int& b){
-            return scores[a] > scores[b];
-        });
-
-        /* 比对IoU，超过阈值的不要 */
-        for (size_t i = 0; i < indice.size(); i++) {
-            if (indice[i] == -1) {
-                continue;
+        /* 每一类做NMS */
+        for (auto& c : nc) {
+            /* 选出该类下标 */
+            std::vector<int> indice;
+            for (size_t i = 0; i < classes.size(); i++) {
+                if (classes[i] == c) {
+                    indice.push_back(i);
+                }
             }
+            
+            /* 按分数降序排序 */
+            std::sort(indice.begin(), indice.end(), [&](const int& a, const int& b) {
+                return scores[a] > scores[b];
+            });
 
-            for (size_t j = i + 1; j < indice.size(); j++) {
-                if (indice[j] == -1) {
+            /* 比对IoU，超过阈值的不要 */
+            for (size_t i = 0; i < indice.size(); i++) {
+                if (indice[i] == -1) {
                     continue;
                 }
 
-                float iou = IoU(boxes[indice[i]], boxes[indice[j]]);
-                if (iou > threshold) {
-                    indice[j] = -1;
+                for (size_t j = i + 1; j < indice.size(); j++) {
+                    if (indice[j] == -1) {
+                        continue;
+                    }
+
+                    float iou = IoU(boxes[indice[i]], boxes[indice[j]]);
+                    if (iou > threshold) {
+                        indice[j] = -1;
+                    }
                 }
             }
+
+            /* 复制结果 */
+            std::copy_if(indice.begin(), indice.end(), std::back_inserter(result), [](const int& v){return v != -1;});
         }
 
-        /* 移除不要的 */
-        auto size = std::remove(indice.begin(), indice.end(), -1) - indice.begin();
-        indice.resize(size);
-
-        return indice;
+        return result;
     }
 };

@@ -1,5 +1,4 @@
-#ifndef __LABEL_H__
-#define __LABEL_H__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -14,5 +13,3 @@ public:
     void Load(const std::string& filepath);
     std::string operator[] (size_type idx) const;
 };
-
-#endif

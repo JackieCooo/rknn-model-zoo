@@ -1,20 +1,22 @@
-#ifndef __OPS_H__
-#define __OPS_H__
+#pragma once
 
+#include <cstdint>
 #include <vector>
+#include <array>
 
 #include "rknn_api.h"
 
 #include "types.hpp"
-#include "rga.hpp"
 
 
 namespace Utils
 {
-    void DFL(float* tensor, int len, float box[4]);
+    std::array<float, 4> DFL(const std::vector<float>& tensor);
     float IoU(const Rect2f& b1, const Rect2f& b2);
-    std::vector<int> NMS(const std::vector<Rect2f>& boxes, const std::vector<float>& scores, float threshold);
-    void Transform(Rect2f& rect, Rga::Transformation& trans);
+    std::vector<int> NMS(const std::vector<Rect2f>& boxes, 
+                         const std::vector<float>& scores,
+                         const std::vector<int>& classes,
+                         float threshold);
 
     template<typename T>
     void NC1HWC2ToNCHW(const T *src, T *dst, const rknn_tensor_attr* srcAttr, const rknn_tensor_attr* dstAttr)
@@ -39,5 +41,3 @@ namespace Utils
         }
     }
 };
-
-#endif

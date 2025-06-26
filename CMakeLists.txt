@@ -4,6 +4,7 @@ project(rknn-model-zoo)
 
 option(RGA_ENABLE "Enable RGA support" ON)
 option(NEON_ENABLE "Enable NEON support" ON)
+option(PREVIEW_ENABLE "Enable preview" ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,6 +28,10 @@ endif(RGA_ENABLE)
 if(NEON_ENABLE)
     add_compile_definitions(WITH_NEON)
 endif(NEON_ENABLE)
+
+if(PREVIEW_ENABLE)
+    add_compile_definitions(WITH_PREVIEW)
+endif(PREVIEW_ENABLE)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/install/bin)
 
@@ -63,3 +68,20 @@ set(CLASSIFY_TARGET classify-example)
 file(GLOB CLS_SRC src/task/classify.cpp)
 add_executable(${CLASSIFY_TARGET} ${PROJ_SRC} ${CLS_SRC} ${RGA_WRAPPER_SRC} example/classify_example.cpp)
 target_link_libraries(${CLASSIFY_TARGET} PRIVATE rknnrt rga ${OpenCV_LIBS})
+
+# yolo-detect
+set(YOLO_DETECT_TARGET yolo-detect-example)
+list(APPEND DET_SRC 
+    ${RGA_WRAPPER_SRC}
+    src/task/yolo_detect.cpp
+    example/yolo_detect_example.cpp
+)
+if(PREVIEW_ENABLE)
+    list(APPEND DET_SRC ${MPI_WRAPPER_SRC})
+endif(PREVIEW_ENABLE)
+add_executable(${YOLO_DETECT_TARGET} ${PROJ_SRC} ${DET_SRC})
+target_link_libraries(${YOLO_DETECT_TARGET} PRIVATE rknnrt rga ${OpenCV_LIBS})
+if(PREVIEW_ENABLE)
+    target_include_directories(${YOLO_DETECT_TARGET} PUBLIC ${MPI_WRAPPER_INC})
+    target_link_libraries(${YOLO_DETECT_TARGET} PRIVATE rockit)
+endif(PREVIEW_ENABLE)

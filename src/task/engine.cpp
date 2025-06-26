@@ -1,3 +1,12 @@
+#include <filesystem>
+#include <chrono>
+
+#include "arm_fp16.h"
+
+#ifdef WITH_NEON
+    #include "arm_neon.h"
+#endif
+
 #include "engine.hpp"
 
 
@@ -34,7 +43,7 @@ void Engine::Init(const std::string &path)
     }
 
     /* 配置多核 */
-    ret = rknn_set_core_mask(_ctx, RKNN_NPU_CORE_0_1);
+    ret = rknn_set_core_mask(_ctx, RKNN_NPU_CORE_ALL);
     if (ret != RKNN_SUCC) {
         std::printf("RKNN set core mask failed\r\n");
     }
@@ -177,7 +186,10 @@ void Engine::AssignInput(const void *data, size_t len)
 
 int Engine::Inference()
 {
+    auto t1 = std::chrono::high_resolution_clock::now();
     int ret = rknn_run(_ctx, nullptr);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    _timeCost.inference = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
     if (ret != RKNN_SUCC) {
         std::printf("Failed to invoke RKNN\r\n");
     }

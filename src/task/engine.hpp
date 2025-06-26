@@ -1,18 +1,12 @@
 #pragma once
 
 #include <string>
-#include <filesystem>
 #include <cstdio>
 #include <cstring>
 #include <memory>
 #include <vector>
 
 #include "rknn_api.h"
-#include "arm_fp16.h"
-
-#ifdef WITH_NEON
-#include "arm_neon.h"
-#endif
 
 #include "types.hpp"
 

@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     }
 
     /* 加载模型 */
-    Classify model(modelPath);
+    Classify model(modelPath, topk);
     auto inputSize = model.GetInputSize();
 
     /* 加载图片 */
